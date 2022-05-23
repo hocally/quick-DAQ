@@ -3,10 +3,10 @@
 
 // A simple data logger for the Arduino analog pins
 
-// how many milliseconds between grabbing data and logging it. 1000 ms is once a second
+// How many milliseconds between grabbing data and logging it. 1000 ms is once a second
 #define LOG_INTERVAL 5 // mills between entries (reduce to take more/faster data)
 
-// how many milliseconds before writing the logged data permanently to disk
+// How many milliseconds before writing the logged data permanently to disk
 // set it to the LOG_INTERVAL to write each time (safest)
 // set it to 10*LOG_INTERVAL to write all data every 10 datareads, you could lose up to
 // the last 10 reads if power is lost but it uses less power and is much faster!
@@ -16,9 +16,12 @@ uint32_t syncTime = 0;     // time of last sync()
 #define ECHO_TO_SERIAL 1 // echo data to serial port
 #define WAIT_TO_START 0  // Wait for serial input in setup()
 
-// the digital pins that connect to the LEDs
+// The digital pins that connect to the LEDs
 #define RED_LED_PIN 2
 #define GREEN_LED_PIN 3
+
+// The driver data logging pin
+#define DRIVER_LED_PIN 4
 
 // The analog pins that connect to the sensors
 #define SHOCK_POT_FL 0    // analog 0
@@ -27,14 +30,14 @@ uint32_t syncTime = 0;     // time of last sync()
 #define SHOCK_POT_RR 3    // analog 3
 #define SHOCK_POT_POWER 4 // analog 4
 
-#define AREF_VOLTAGE 5.0 // we tie 3.3V to ARef and measure it with a multimeter!
+#define AREF_VOLTAGE 5.0 // We tie 3.3V to ARef and measure it with a multimeter!
 #define ADC_LEVELS 1023.0
 
-// for the data logging shield, we use digital pin 10 for the SD cs line
+// For the data logging shield, we use digital pin 10 for the SD cs line
 const int chipSelect = 10;
 const float adcConversionConstant = AREF_VOLTAGE / ADC_LEVELS;
 
-// the logging file
+// The logging file
 File logfile;
 
 void error(char *str)
@@ -42,7 +45,7 @@ void error(char *str)
   Serial.print("error: ");
   Serial.println(str);
 
-  // red LED indicates error
+  // Red LED indicates error
   digitalWrite(RED_LED_PIN, HIGH);
 
   while (1)
@@ -54,7 +57,7 @@ void setup(void)
   Serial.begin(9600);
   Serial.println();
 
-  // use debugging LEDs
+  // Use debugging LEDs
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
 
@@ -64,13 +67,13 @@ void setup(void)
     ;
 #endif // WAIT_TO_START
 
-  // initialize the SD card
+  // Initialize the SD card
   Serial.print("Initializing SD card...");
-  // make sure that the default chip select pin is set to
+  // Make sure that the default chip select pin is set to
   // output, even if you don't use it:
   pinMode(10, OUTPUT);
 
-  // see if the card is present and can be initialized:
+  // See if the card is present and can be initialized:
   if (!SD.begin(chipSelect))
   {
     error("Card failed, or not present");
@@ -85,7 +88,7 @@ void setup(void)
     filename[7] = i % 10 + '0';
     if (!SD.exists(filename))
     {
-      // only open a new file if it doesn't exist
+      // Only open a new file if it doesn't exist
       logfile = SD.open(filename, FILE_WRITE);
       break; // leave the loop!
     }
@@ -110,17 +113,17 @@ void setup(void)
 
 void loop(void)
 {
-  // delay for the amount of time we want between readings
+  // Delay for the amount of time we want between readings
   delay((LOG_INTERVAL - 1) - (millis() % LOG_INTERVAL));
 
   digitalWrite(GREEN_LED_PIN, HIGH);
 
-  // log milliseconds since starting
+  // Log milliseconds since starting
   uint32_t m = millis();
-  logfile.print(m); // milliseconds since start
+  logfile.print(m); // Milliseconds since start
   logfile.print(", ");
 #if ECHO_TO_SERIAL
-  Serial.print(m); // milliseconds since start
+  Serial.print(m); // Milliseconds since start
   Serial.print(", ");
 #endif
 
