@@ -6,6 +6,10 @@ This was a far-too quick build of a simple DAQ system to support suspension anal
 - A protoshield housing a simple RC frontend with an FC ~20 kHz
 - A hammond (?) enclosure with a waterproof gasket  
 
+![IMG_0969](https://user-images.githubusercontent.com/21182349/169952004-6e6a3786-f026-4905-a3f6-38cc38ba333e.JPEG)
+![IMG_0970](https://user-images.githubusercontent.com/21182349/169952006-84fe9d98-78cb-4266-bde6-59bf2d5e0d51.JPEG)
+
+
 The electrical build took about 2 and a half hours and is certainly not my finest work. I think it will do the trick given the project requirements. The following pinout and most of the TODO's refer to the first article (SN: 1). 
 
 ### Pinout
