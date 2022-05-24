@@ -3,37 +3,77 @@
 
 // A simple data logger for the Arduino analog pins
 
-// How many milliseconds between grabbing data and logging it. 1000 ms is once a second
-#define LOG_INTERVAL 5 // mills between entries (reduce to take more/faster data)
+// How many milliseconds between grabbing data and logging it
+// MAYBE TOUCH if logging too slow or too fast
+#define LOG_INTERVAL 5
 
-// How many milliseconds before writing the logged data permanently to disk
-// set it to the LOG_INTERVAL to write each time (safest)
-// set it to 10*LOG_INTERVAL to write all data every 10 datareads, you could lose up to
-// the last 10 reads if power is lost but it uses less power and is much faster!
-#define SYNC_INTERVAL 1000 // mills between calls to flush() - to write data to the card
+// How many milliseconds before writing the logged data permanently to SD
+// PROBABLY DON'T TOUCH unless you really need to optimize how 
+// much data you will retain after power off
+#define SYNC_INTERVAL 1000
 uint32_t syncTime = 0;     // time of last sync()
 
-#define ECHO_TO_SERIAL 1 // echo data to serial port
-#define WAIT_TO_START 0  // Wait for serial input in setup()
-
 // The digital pins that connect to the LEDs
+// DON'T TOUCH
 #define RED_LED_PIN 2
 #define GREEN_LED_PIN 3
 
+// TODO: No electrical connections exist yet for this and no code uses it
 // The driver data logging pin
 #define DRIVER_LED_PIN 4
 
 // The analog pins that connect to the sensors
+// DON'T TOUCH
 #define SHOCK_POT_FL 0    // analog 0
 #define SHOCK_POT_FR 1    // analog 1
 #define SHOCK_POT_RL 2    // analog 2
 #define SHOCK_POT_RR 3    // analog 3
-#define SHOCK_POT_POWER 4 // analog 4
 
-#define AREF_VOLTAGE 5.0 // We tie 3.3V to ARef and measure it with a multimeter!
-#define ADC_LEVELS 1023.0
+// Left front shock pot cal
+// Voltage reading at bottom of travel, volts
+#define SPFL_BOT_VOLTAGE 0.0 // CALIBRATE ME
+// Voltage reading at top of travel, volts
+#define SPFL_TOT_VOLTAGE 0.0 // CALIBRATE ME
+// Measured displacement reading at bottom of travel, inches
+#define SPFL_BOT_DISPLACEMENT 0.0 // CALIBRATE ME
+// Measured displacement reading at top of travel, inches
+#define SPFL_TOT_DISPLACEMENT 8.0 // CALIBRATE ME
+
+// Right front shock pot cal
+// Voltage reading at bottom of travel, volts
+#define SPFR_BOT_VOLTAGE 0.0 // CALIBRATE ME
+// Voltage reading at top of travel, volts
+#define SPFR_TOT_VOLTAGE 5.0 // CALIBRATE ME
+// Measured displacement reading at bottom of travel, inches
+#define SPFR_BOT_DISPLACEMENT 0.0 // CALIBRATE ME
+// Measured displacement reading at top of travel, inches
+#define SPFR_TOT_DISPLACEMENT 8.0 // CALIBRATE ME
+
+// Left rear shock pot cal
+// Voltage reading at bottom of travel, volts
+#define SPRL_BOT_VOLTAGE 0.0 // CALIBRATE ME
+// Voltage reading at top of travel, volts
+#define SPRL_TOT_VOLTAGE 5.0 // CALIBRATE ME
+// Measured displacement reading at bottom of travel, inches
+#define SPRL_BOT_DISPLACEMENT 0.0 // CALIBRATE ME
+// Measured displacement reading at top of travel, inches
+#define SPRL_TOT_DISPLACEMENT 8.0 // CALIBRATE ME
+
+// Right rear shock pot cal
+// Voltage reading at bottom of travel, volts
+#define SPRR_BOT_VOLTAGE 0.0 // CALIBRATE ME
+// Voltage reading at top of travel, volts
+#define SPRR_TOT_VOLTAGE 5.0 // CALIBRATE ME
+// Measured displacement reading at bottom of travel, inches
+#define SPRR_BOT_DISPLACEMENT 0.0 // CALIBRATE ME
+// Measured displacement reading at top of travel, inches
+#define SPRR_TOT_DISPLACEMENT 8.0 // CALIBRATE ME
+
+#define AREF_VOLTAGE 5.0 // DON'T TOUCH
+#define ADC_LEVELS 1023.0 // DON'T TOUCH
 
 // For the data logging shield, we use digital pin 10 for the SD cs line
+// DON'T TOUCH
 const int chipSelect = 10;
 const float adcConversionConstant = AREF_VOLTAGE / ADC_LEVELS;
 
@@ -42,7 +82,7 @@ File logfile;
 
 void error(char *str)
 {
-  Serial.print("error: ");
+  Serial.print("Error: ");
   Serial.println(str);
 
   // Red LED indicates error
@@ -54,21 +94,15 @@ void error(char *str)
 
 void setup(void)
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println();
 
   // Use debugging LEDs
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
 
-#if WAIT_TO_START
-  Serial.println("Type any character to start");
-  while (!Serial.available())
-    ;
-#endif // WAIT_TO_START
-
   // Initialize the SD card
-  Serial.print("Initializing SD card...");
+  Serial.print("Initializing SD card.");
   // Make sure that the default chip select pin is set to
   // output, even if you don't use it:
   pinMode(10, OUTPUT);
@@ -76,9 +110,9 @@ void setup(void)
   // See if the card is present and can be initialized:
   if (!SD.begin(chipSelect))
   {
-    error("Card failed, or not present");
+    error("card initialization failed, or not present.");
   }
-  Serial.println("card initialized.");
+  Serial.println("Card initialized.");
 
   // create a new file
   char filename[] = "LOGGER00.CSV";
@@ -96,19 +130,14 @@ void setup(void)
 
   if (!logfile)
   {
-    error("couldnt create file");
+    error("couldn't create file.");
   }
 
   Serial.print("Logging to: ");
   Serial.println(filename);
 
-  logfile.println("millis,shock pot FL, shock pot FR, shock pot RL, shock pot RR");
-#if ECHO_TO_SERIAL
-  Serial.println("millis,shock pot FL, shock pot FR, shock pot RL, shock pot RR");
-#endif // ECHO_TO_SERIAL
-
-  // If you want to set the aref to something other than 5v
-  // analogReference(EXTERNAL);
+  logfile.println("Time (ms),Shock pot FL displacement (in), Shock pot FR displacement (in), Shock pot RL displacement (in), Shock pot RR displacement (in)");
+  Serial.println("Time (ms),Shock pot FL displacement (in), Shock pot FR displacement (in), Shock pot RL displacement (in), Shock pot RR displacement (in)");
 }
 
 void loop(void)
@@ -122,32 +151,39 @@ void loop(void)
   uint32_t m = millis();
   logfile.print(m); // Milliseconds since start
   logfile.print(", ");
-#if ECHO_TO_SERIAL
   Serial.print(m); // Milliseconds since start
   Serial.print(", ");
-#endif
 
+  // TODO: This section could be converted to a single mult up per channel 
+  // if it's slow (using the preprocessor) Keeping it verbose for now for debugging 
+
+  // Read raw ADC values
   int shockPotFLRaw = analogRead(SHOCK_POT_FL);
   int shockPotFRRaw = analogRead(SHOCK_POT_FR);
   int shockPotRLRaw = analogRead(SHOCK_POT_RL);
   int shockPotRRRaw = analogRead(SHOCK_POT_RR);
 
-  // converting that reading to voltage, for 3.3v arduino use 3.3, for 5.0, use 5.0
+  // Convert to intermediate voltage values
   float shockPotFLVoltage = shockPotFLRaw * adcConversionConstant;
   float shockPotFRVoltage = shockPotFRRaw * adcConversionConstant;
   float shockPotRLVoltage = shockPotRLRaw * adcConversionConstant;
   float shockPotRRVoltage = shockPotRRRaw * adcConversionConstant;
 
-  logfile.print(shockPotFLVoltage);
+  // Convert to calibrated displacement
+  float shockPotFLDisplacement = mapfloat(shockPotFLVoltage, SPFL_BOT_VOLTAGE, SPFL_TOT_VOLTAGE, SPFL_BOT_DISPLACEMENT, SPFL_TOT_DISPLACEMENT);
+  float shockPotFRDisplacement = mapfloat(shockPotFRVoltage, SPFR_BOT_VOLTAGE, SPFR_TOT_VOLTAGE, SPFR_BOT_DISPLACEMENT, SPFR_TOT_DISPLACEMENT);
+  float shockPotRLDisplacement = mapfloat(shockPotRLVoltage, SPRL_BOT_VOLTAGE, SPRL_TOT_VOLTAGE, SPRL_BOT_DISPLACEMENT, SPRL_TOT_DISPLACEMENT);
+  float shockPotRRDisplacement = mapfloat(shockPotRRVoltage, SPRR_BOT_VOLTAGE, SPRR_TOT_VOLTAGE, SPRR_BOT_DISPLACEMENT, SPRR_TOT_DISPLACEMENT);
+
+  logfile.print(shockPotFLDisplacement);
   logfile.print(", ");
-  logfile.print(shockPotFRVoltage);
+  logfile.print(shockPotFRDisplacement);
   logfile.print(", ");
-  logfile.print(shockPotRLVoltage);
+  logfile.print(shockPotRLDisplacement);
   logfile.print(", ");
-  logfile.print(shockPotRRVoltage);
+  logfile.print(shockPotRRDisplacement);
   logfile.print(", ");
 
-#if ECHO_TO_SERIAL
   Serial.print(shockPotFLVoltage);
   Serial.print(", ");
   Serial.print(shockPotFRVoltage);
@@ -156,12 +192,9 @@ void loop(void)
   Serial.print(", ");
   Serial.print(shockPotRRVoltage);
   Serial.print(", ");
-#endif // ECHO_TO_SERIAL
 
   logfile.println();
-#if ECHO_TO_SERIAL
   Serial.println();
-#endif // ECHO_TO_SERIAL
 
   digitalWrite(GREEN_LED_PIN, LOW);
 
@@ -175,4 +208,10 @@ void loop(void)
   digitalWrite(RED_LED_PIN, HIGH);
   logfile.flush();
   digitalWrite(RED_LED_PIN, LOW);
+}
+
+// Helper function to map floats
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
