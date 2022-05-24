@@ -1,5 +1,13 @@
 # Quick-DAQ
 
+This was a far-too quick build of a simple DAQ system to support suspension analysis on a Baja SAE car (Specifically the John's Hopkins University team, go Blue Jays!). It consists of the following components:
+- An Arduino Uno
+- An Adafruit datalogging shield
+- A protoshield housing a simple RC frontend with an FC ~20 kHz
+- A hammond (?) enclosure with a waterproof gasket  
+
+The electrical build took about 2 and a half hours and is certainly not my finest work. I think it will do the trick given the project requirements. The following pinout and most of the TODO's refer to the first article (SN: 1). 
+
 ### Pinout
 - USB Cable  
     - Hopefully pretty obvious, used to re-flash device firmware. Current logging session (if in progress) is stopped briefely while device is forced under reset to connect to UART
@@ -38,3 +46,14 @@
     8. Observe the ***VOLTAGE*** of the shock under calibration and adjust the SPXX_BOT_VOLTAGE to this number
     9. Once these values are saved, reprogram the board with the new calibration and ensure coherent results (0 displacement at TOT, linearliy increasing to SPXX_BOT_DISPLACEMENT at BOT)
     10. Repeat steps 1-9 on all other corners
+
+## Operating Instructions
+1. Ensure all connectors are mated (potentiometers)
+2. Ensure battery is charged
+3. Turn on/connect battery and observe solid green and blinking red light
+4. Drive! Logging is taking place
+5. Once done with test, simply disconnect power, wait a minimum of 5 seconds, then remove SD card.
+6. Connect to SD card and retrieve your design-tent winning data!
+    - The file naming convention is sequential, so the latest run is the highest number
+
+*From Minneapolis with love <3*
