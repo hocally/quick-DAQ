@@ -33,7 +33,7 @@ uint32_t syncTime = 0;     // time of last sync()
 // Voltage reading at bottom of travel, volts
 #define SPFL_BOT_VOLTAGE 0.0 // CALIBRATE ME
 // Voltage reading at top of travel, volts
-#define SPFL_TOT_VOLTAGE 0.0 // CALIBRATE ME
+#define SPFL_TOT_VOLTAGE 5.0 // CALIBRATE ME
 // Measured displacement reading at bottom of travel, inches
 #define SPFL_BOT_DISPLACEMENT 0.0 // CALIBRATE ME
 // Measured displacement reading at top of travel, inches
@@ -136,8 +136,8 @@ void setup(void)
   Serial.print("Logging to: ");
   Serial.println(filename);
 
-  logfile.println("Time (ms),Shock pot FL displacement (in), Shock pot FR displacement (in), Shock pot RL displacement (in), Shock pot RR displacement (in)");
-  Serial.println("Time (ms),Shock pot FL displacement (in), Shock pot FR displacement (in), Shock pot RL displacement (in), Shock pot RR displacement (in)");
+  logfile.println("Time (ms),Shock pot FL displacement (in),Shock pot FL voltage (V),Shock pot FR displacement (in),Shock pot FR voltage (V),Shock pot RL displacement (in),Shock pot RL voltage (V),Shock pot RR displacement (in),Shock pot RR voltage (V)");
+  Serial.println("Time (ms),Shock pot FL displacement (in),Shock pot FL voltage (V),Shock pot FR displacement (in),Shock pot FR voltage (V),Shock pot RL displacement (in),Shock pot RL voltage (V),Shock pot RR displacement (in),Shock pot RR voltage (V)");
 }
 
 void loop(void)
@@ -177,18 +177,34 @@ void loop(void)
 
   logfile.print(shockPotFLDisplacement);
   logfile.print(", ");
+  logfile.print(shockPotFLVoltage);
+  logfile.print(", ");
   logfile.print(shockPotFRDisplacement);
+  logfile.print(", ");
+  logfile.print(shockPotFRVoltage);
   logfile.print(", ");
   logfile.print(shockPotRLDisplacement);
   logfile.print(", ");
+  logfile.print(shockPotRLVoltage);
+  logfile.print(", ");
   logfile.print(shockPotRRDisplacement);
   logfile.print(", ");
+  logfile.print(shockPotRRVoltage);
+  logfile.print(", ");
 
+  Serial.print(shockPotFLDisplacement);
+  Serial.print(", ");
   Serial.print(shockPotFLVoltage);
+  Serial.print(", ");
+  Serial.print(shockPotFRDisplacement);
   Serial.print(", ");
   Serial.print(shockPotFRVoltage);
   Serial.print(", ");
+  Serial.print(shockPotRLDisplacement);
+  Serial.print(", ");
   Serial.print(shockPotRLVoltage);
+  Serial.print(", ");
+  Serial.print(shockPotRRDisplacement);
   Serial.print(", ");
   Serial.print(shockPotRRVoltage);
   Serial.print(", ");
