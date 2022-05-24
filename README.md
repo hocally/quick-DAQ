@@ -35,7 +35,7 @@ The electrical build took about 2 and a half hours and is certainly not my fines
 - The harness connecting the shock pots to the needs to be constructed. The pinouts for such harnesses should reference the above pinout
 - There is currently no provision for non-USB power on the board. Henry O'C has a few ideas, but the easiest would likely be to just run a 9V battery to the VIN and GND pins of the board through a gap in the USB connector hole
 - The USB cable can currently be "removed" but it may end up making the box more robust to just keep it permanently mounted to the box and simply ziptie/tape off the connecotor to reduce the likelyhood if water/dirt ingress
-- The shock pots should be calibrated using the following procedure. The following procedure should be repeated on each corner in sucession
+- The shock pots should be calibrated using the following procedure. Repeat on each corner in sucession
     1. Remove the shock to allow the linkage to move freely
     2. Connect the board to a laptop and open the serial monitor
     3. Find the data corresponding to the shock you are calibrating (ordering of the shocks is documented at the top of the stream and in the data file, however it goes FL displacement, FL voltage, FR displacement, FR voltage, RL displacement, RL voltage, RR displacement, RR voltage)
